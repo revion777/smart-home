@@ -1,0 +1,65 @@
+service: smart-home
+
+provider:
+  name: aws
+  runtime: go1.x
+  region: us-east-1
+
+functions:
+  createDevice:
+    handler: main
+    events:
+      - http:
+          path: devices
+          method: post
+  getDevice:
+    handler: main
+    events:
+      - http:
+          path: devices/{id}
+          method: get
+  updateDevice:
+    handler: main
+    events:
+      - http:
+          path: devices/{id}
+          method: put
+  deleteDevice:
+    handler: main
+    events:
+      - http:
+          path: devices/{id}
+          method: delete
+  processSQS:
+    handler: main
+    events:
+      - sqs:
+          arn: arn:aws:sqs:us-east-1:123456789012:device-home-association
+
+resources:
+  Resources:
+    DevicesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Devices
+        AttributeDefinitions:
+          - AttributeName: ID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ID
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+        TableClass: STANDARD
+    DeviceHomeAssociationQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: device-home-association
+
+iamRoleStatements:
+  - Effect: Allow
+    Action:
+      - dynamodb:*
+      - sqs:*
+    Resource: "*"
