@@ -3,7 +3,11 @@ service: smart-home
 provider:
   name: aws
   runtime: go1.x
-  region: us-east-1
+  region: us-west-2
+  environment:
+    AWS_REGION: ${self:provider.region}
+    DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+    SQS_QUEUE_URL: ${self:provider.environment.SQS_QUEUE_URL}
 
 functions:
   createDevice:
@@ -30,32 +34,54 @@ functions:
       - http:
           path: devices/{id}
           method: delete
-  processSQS:
+  processSQSMessage:
     handler: main
     events:
       - sqs:
-          arn: arn:aws:sqs:us-east-1:123456789012:device-home-association
+          arn:
+            Fn::GetAtt:
+              - DeviceQueue
+              - Arn
 
 resources:
   Resources:
-    DevicesTable:
+    DeviceTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: Devices
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
         AttributeDefinitions:
-          - AttributeName: ID
+          - AttributeName: id
             AttributeType: S
         KeySchema:
-          - AttributeName: ID
+          - AttributeName: id
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
-        TableClass: STANDARD
-    DeviceHomeAssociationQueue:
+
+    DeviceQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: device-home-association
+        QueueName: deviceQueue
+
+  Outputs:
+    DeviceTableName:
+      Description: "The name of the DynamoDB table"
+      Value:
+        Ref: DeviceTable
+
+    DeviceQueueURL:
+      Description: "The URL of the SQS queue"
+      Value:
+        Ref: DeviceQueue
+
+    DeviceQueueARN:
+      Description: "The ARN of the SQS queue"
+      Value:
+        Fn::GetAtt:
+          - DeviceQueue
+          - Arn
+
 
 iamRoleStatements:
   - Effect: Allow

@@ -1,22 +1,13 @@
 package services
 
 import (
+	"context"
 	"smart-home/models"
-	"smart-home/repositories"
 )
 
-func CreateDevice(device models.Device) (models.Device, error) {
-	return repositories.CreateDevice(device)
-}
-
-func GetDevice(id string) (models.Device, error) {
-	return repositories.GetDevice(id)
-}
-
-func UpdateDevice(id string, device models.Device) (models.Device, error) {
-	return repositories.UpdateDevice(id, device)
-}
-
-func DeleteDevice(id string) error {
-	return repositories.DeleteDevice(id)
+type DeviceService interface {
+	CreateDevice(ctx context.Context, device *models.Device) error
+	GetDevice(ctx context.Context, id string) (*models.Device, error)
+	UpdateDevice(ctx context.Context, device *models.Device) error
+	DeleteDevice(ctx context.Context, id string) error
 }

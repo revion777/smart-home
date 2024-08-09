@@ -1,41 +1,28 @@
 package handlers
 
 import (
-	"encoding/json"
+	"context"
 	"github.com/aws/aws-lambda-go/events"
-	"smart-home/models"
+	"smart-home/config"
+	"smart-home/queue"
+	"smart-home/repositories"
 	"smart-home/services"
-	"time"
 )
 
-func ProcessSQSMessage(sqsEvent events.SQSEvent) error {
-	for _, message := range sqsEvent.Records {
-		err := handleSQSMessage(message.Body)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+var (
+	queueService services.QueueService
+)
+
+func init() {
+	deviceRepo := repositories.NewDynamoDeviceRepository(config.AppConfig.DynamoClient)
+	queueService = services.NewQueueService(queue.NewSQSQueue(config.AppConfig.SQSClient,
+		config.AppConfig.SQSQueueURL),
+		deviceRepo)
 }
 
-func handleSQSMessage(messageBody string) error {
-	var association models.DeviceHomeAssociation
-	err := json.Unmarshal([]byte(messageBody), &association)
+func ProcessSQSMessageHandler(ctx context.Context, event events.SQSEvent) {
+	err := queueService.ProcessMessages(ctx)
 	if err != nil {
-		return err
+		config.AppConfig.Log.Printf("Failed to process SQS messages: %v", err)
 	}
-
-	device, err := services.GetDevice(association.DeviceID)
-	if err != nil {
-		return err
-	}
-	if device.ID == "" {
-		return nil // Device not found, skip update
-	}
-
-	device.HomeID = association.HomeID
-	device.ModifiedAt = time.Now().UnixMilli()
-
-	_, err = services.UpdateDevice(association.DeviceID, device)
-	return err
 }

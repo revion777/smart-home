@@ -9,8 +9,3 @@ type Device struct {
 	CreatedAt  int64  `json:"createdAt"`
 	ModifiedAt int64  `json:"modifiedAt"`
 }
-
-type DeviceHomeAssociation struct {
-	DeviceID string `json:"deviceId"`
-	HomeID   string `json:"homeId"`
-}
