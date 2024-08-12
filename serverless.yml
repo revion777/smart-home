@@ -2,7 +2,7 @@ service: smart-home
 
 provider:
   name: aws
-  runtime: go1.x
+  runtime: provided.al2023
   region: us-west-2
   environment:
     AWS_REGION: ${self:provider.region}
@@ -16,24 +16,60 @@ functions:
       - http:
           path: devices
           method: post
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource:
+          - Fn::GetAtt:
+              - DeviceTable
+              - Arn
+
   getDevice:
     handler: main
     events:
       - http:
           path: devices/{id}
           method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource:
+          - Fn::GetAtt:
+              - DeviceTable
+              - Arn
+
   updateDevice:
     handler: main
     events:
       - http:
           path: devices/{id}
           method: put
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource:
+          - Fn::GetAtt:
+              - DeviceTable
+              - Arn
+
   deleteDevice:
     handler: main
     events:
       - http:
           path: devices/{id}
           method: delete
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource:
+          - Fn::GetAtt:
+              - DeviceTable
+              - Arn
+
   processSQSMessage:
     handler: main
     events:
@@ -42,27 +78,37 @@ functions:
             Fn::GetAtt:
               - DeviceQueue
               - Arn
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+          - sqs:ReceiveMessage
+          - sqs:DeleteMessage
+        Resource:
+          - Fn::GetAtt:
+              - DeviceTable
+              - Arn
+          - Fn::GetAtt:
+              - DeviceQueue
+              - Arn
 
 resources:
-  Resources:
-    DeviceTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:provider.environment.DYNAMODB_TABLE}
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+  DeviceTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:provider.environment.DYNAMODB_TABLE}
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
-    DeviceQueue:
-      Type: AWS::SQS::Queue
-      Properties:
-        QueueName: deviceQueue
+  DeviceQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: deviceQueue
 
   Outputs:
     DeviceTableName:
@@ -81,11 +127,3 @@ resources:
         Fn::GetAtt:
           - DeviceQueue
           - Arn
-
-
-iamRoleStatements:
-  - Effect: Allow
-    Action:
-      - dynamodb:*
-      - sqs:*
-    Resource: "*"
