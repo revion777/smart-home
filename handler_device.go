@@ -1,20 +1,20 @@
-package handlers
+package main
 
 import (
 	"context"
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 	"net/http"
 	"smart-home/config"
 	"smart-home/models"
-	"smart-home/repositories"
 	"smart-home/services"
 )
 
 var deviceService services.DeviceService
 
 func init() {
-	deviceService = services.DeviceService(repositories.NewDynamoDeviceRepository(config.AppConfig.DynamoClient))
+	deviceService = config.AppConfig.DeviceService
 }
 
 func CreateDeviceHandler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
@@ -77,4 +77,23 @@ func DeleteDeviceHandler(request events.APIGatewayProxyRequest) (*events.APIGate
 	}
 
 	return &events.APIGatewayProxyResponse{StatusCode: http.StatusNoContent}, nil
+}
+
+func DeviceHandler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
+	switch request.HTTPMethod {
+	case http.MethodPost:
+		return CreateDeviceHandler(request)
+	case http.MethodGet:
+		return GetDeviceHandler(request)
+	case http.MethodPut:
+		return UpdateDeviceHandler(request)
+	case http.MethodDelete:
+		return DeleteDeviceHandler(request)
+	default:
+		return &events.APIGatewayProxyResponse{StatusCode: http.StatusMethodNotAllowed}, nil
+	}
+}
+
+func main() {
+	lambda.Start(DeviceHandler)
 }

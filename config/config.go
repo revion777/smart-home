@@ -4,18 +4,19 @@ import (
 	"errors"
 	"log"
 	"os"
+	"smart-home/repositories"
+	"smart-home/services"
+	"smart-home/services/queue"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
 type Config struct {
-	DynamoClient *dynamodb.Client
-	SQSClient    *sqs.Client
-	SQSQueueURL  string
-	Log          *log.Logger
+	DeviceService services.DeviceService
+	QueueService  queue.Service
+	Log           *log.Logger
 }
 
 var (
@@ -28,13 +29,10 @@ func InitConfig() {
 		log.Fatalf("failed to load AWS config: %v", err)
 	}
 
-	AppConfig.DynamoClient = dynamodb.NewFromConfig(awsCfg)
-	AppConfig.SQSClient = sqs.NewFromConfig(awsCfg)
-	AppConfig.SQSQueueURL = os.Getenv("SQS_QUEUE_URL")
-	if AppConfig.SQSQueueURL == "" {
-		log.Fatal("SQS_QUEUE_URL is not set")
-	}
-
+	dynamoClient := dynamodb.NewFromConfig(awsCfg)
+	deviceRepository := repositories.NewDeviceRepository(dynamoClient)
+	AppConfig.DeviceService = services.NewDeviceService(deviceRepository)
+	AppConfig.QueueService = queue.NewQueueService(AppConfig.DeviceService)
 	AppConfig.Log = log.New(os.Stdout, "", log.LstdFlags)
 }
 
