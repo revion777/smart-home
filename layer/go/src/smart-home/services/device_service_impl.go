@@ -2,8 +2,8 @@ package services
 
 import (
 	"context"
-	"smart-home/models"
-	"smart-home/repositories"
+	"smart-home/layer/go/src/smart-home/models"
+	"smart-home/layer/go/src/smart-home/repositories"
 )
 
 type DeviceServiceImpl struct {

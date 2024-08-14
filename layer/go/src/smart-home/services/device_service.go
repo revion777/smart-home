@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"smart-home/models"
+	"smart-home/layer/go/src/smart-home/models"
 )
 
 type DeviceService interface {

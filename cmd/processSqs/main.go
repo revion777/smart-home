@@ -1,13 +1,13 @@
-package main
+package processSqs
 
 import (
 	"context"
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"smart-home/config"
-	"smart-home/models"
-	"smart-home/services/queue"
+	"smart-home/layer/go/src/smart-home/config"
+	"smart-home/layer/go/src/smart-home/models"
+	"smart-home/layer/go/src/smart-home/services/queue"
 )
 
 var (
@@ -15,10 +15,11 @@ var (
 )
 
 func init() {
+	config.InitQueueServiceConfig()
 	queueService = config.AppConfig.QueueService
 }
 
-func SQSMessageHandler(sqsEvent events.SQSEvent) error {
+func Handler(sqsEvent events.SQSEvent) error {
 	for _, message := range sqsEvent.Records {
 		var device models.Device
 
@@ -42,5 +43,5 @@ func SQSMessageHandler(sqsEvent events.SQSEvent) error {
 }
 
 func main() {
-	lambda.Start(SQSMessageHandler)
+	lambda.Start(Handler)
 }
