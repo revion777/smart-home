@@ -1,4 +1,4 @@
-package main
+package createDevice
 
 import (
 	"context"
