@@ -1,4 +1,4 @@
-package updateDevice
+package main
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"net/http"
-	"smart-home/layer/go/src/smart-home/config"
-	"smart-home/layer/go/src/smart-home/models"
-	"smart-home/layer/go/src/smart-home/services"
+	"smart-home/layer/config"
+	"smart-home/layer/models"
+	"smart-home/layer/services"
 )
 
 var deviceService services.DeviceService
@@ -19,20 +19,18 @@ func init() {
 }
 
 func Handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	id := request.PathParameters["id"]
 	var device models.Device
 	if err := json.Unmarshal([]byte(request.Body), &device); err != nil {
 		config.AppConfig.Log.Printf("Failed to unmarshal request body: %v", err)
 		return &events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, nil
 	}
 
-	device.ID = id
-	if err := deviceService.UpdateDevice(context.Background(), &device); err != nil {
-		config.AppConfig.Log.Printf("Failed to update device: %v", err)
+	if err := deviceService.CreateDevice(context.Background(), &device); err != nil {
+		config.AppConfig.Log.Printf("Failed to create device: %v", err)
 		return &events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, nil
 	}
 
-	return &events.APIGatewayProxyResponse{StatusCode: http.StatusOK}, nil
+	return &events.APIGatewayProxyResponse{StatusCode: http.StatusCreated}, nil
 }
 
 func main() {

@@ -1,4 +1,4 @@
-package getDevice
+package main
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"net/http"
-	"smart-home/layer/go/src/smart-home/config"
-	"smart-home/layer/go/src/smart-home/services"
+	"smart-home/layer/config"
+	"smart-home/layer/services"
 )
 
 var deviceService services.DeviceService

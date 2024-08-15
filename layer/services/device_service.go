@@ -1,11 +1,11 @@
-package repositories
+package services
 
 import (
 	"context"
-	"smart-home/layer/go/src/smart-home/models"
+	"smart-home/layer/models"
 )
 
-type DeviceRepository interface {
+type DeviceService interface {
 	CreateDevice(ctx context.Context, device *models.Device) error
 	GetDevice(ctx context.Context, id string) (*models.Device, error)
 	UpdateDevice(ctx context.Context, device *models.Device) error

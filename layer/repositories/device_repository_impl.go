@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"smart-home/layer/go/src/smart-home/models"
+	"smart-home/layer/models"
 )
 
 type DeviceRepositoryImpl struct {

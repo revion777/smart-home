@@ -1,13 +1,13 @@
-package processSqs
+package main
 
 import (
 	"context"
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"smart-home/layer/go/src/smart-home/config"
-	"smart-home/layer/go/src/smart-home/models"
-	"smart-home/layer/go/src/smart-home/services/queue"
+	"smart-home/layer/config"
+	"smart-home/layer/models"
+	"smart-home/layer/services/queue"
 )
 
 var (
