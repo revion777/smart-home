@@ -5,16 +5,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"log"
-	"os"
-	"smart-home/layer/repositories"
-	"smart-home/layer/services"
-	"smart-home/layer/services/queue"
+	"smart-home/repositories"
+	"smart-home/services"
+	"smart-home/services/queue"
 )
 
 type Config struct {
 	DeviceService services.DeviceService
 	QueueService  queue.Service
-	Log           *log.Logger
 }
 
 var (
@@ -30,7 +28,6 @@ func InitDeviceServiceConfig() {
 	dynamoClient := dynamodb.NewFromConfig(awsCfg)
 	deviceRepository := repositories.NewDeviceRepository(dynamoClient)
 	AppConfig.DeviceService = services.NewDeviceService(deviceRepository)
-	AppConfig.Log = log.New(os.Stdout, "", log.LstdFlags)
 }
 
 func InitQueueServiceConfig() {
@@ -43,5 +40,4 @@ func InitQueueServiceConfig() {
 	deviceRepository := repositories.NewDeviceRepository(dynamoClient)
 	deviceService := services.NewDeviceService(deviceRepository)
 	AppConfig.QueueService = queue.NewQueueService(deviceService)
-	AppConfig.Log = log.New(os.Stdout, "", log.LstdFlags)
 }

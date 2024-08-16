@@ -4,24 +4,15 @@ provider:
   name: aws
   runtime: provided.al2023
   region: ${opt:region, 'eu-central-1'}
-  DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+  environment:
+    DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
 
   package:
     individually: true
 
-  layers:
-    common:
-      name: CommonLambdaLayer
-      path: layer
-      compatibleRuntimes:
-        - provided.al2023
-        -
-
 functions:
   createDevice:
-    handler: createDevice/main/create_device
-    layers:
-      - { Ref: CommonLambdaLayer }
+    handler: handlers/createDevice/main/create_device
     events:
       - http:
           path: devices
@@ -36,9 +27,7 @@ functions:
               - Arn
 
   getDevice:
-    handler: getDevice/main/get_device
-    layers:
-      - { Ref: CommonLambdaLayer }
+    handler: handlers/getDevice/main/get_device
     events:
       - http:
           path: devices/{id}
@@ -53,9 +42,7 @@ functions:
               - Arn
 
   updateDevice:
-    handler: updateDevice/main/update_device
-    layers:
-      - { Ref: CommonLambdaLayer }
+    handler: handlers/updateDevice/main/update_device
     events:
       - http:
           path: devices/{id}
@@ -70,9 +57,7 @@ functions:
               - Arn
 
   deleteDevice:
-    handler: deleteDevice/main/delete_device
-    layers:
-      - { Ref: CommonLambdaLayer }
+    handler: handlers/deleteDevice/main/delete_device
     events:
       - http:
           path: devices/{id}
@@ -87,9 +72,7 @@ functions:
               - Arn
 
   processSQSMessage:
-    handler: processSqs/main/process_sqs
-    layers:
-      - { Ref: CommonLambdaLayer }
+    handler: handlers/processSqs/main/process_sqs
     events:
       - sqs:
           arn:
@@ -99,15 +82,18 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:UpdateItem
           - sqs:ReceiveMessage
           - sqs:DeleteMessage
         Resource:
           - Fn::GetAtt:
-              - DeviceTable
-              - Arn
-          - Fn::GetAtt:
               - DeviceQueue
+              - Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource:
+          - Fn::GetAtt:
+              - DeviceTable
               - Arn
 
 resources:
@@ -122,7 +108,7 @@ resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-
+  
   DeviceQueue:
     Type: AWS::SQS::Queue
     Properties:

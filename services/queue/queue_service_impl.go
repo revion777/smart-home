@@ -2,8 +2,8 @@ package queue
 
 import (
 	"context"
-	"smart-home/layer/models"
-	"smart-home/layer/services"
+	"smart-home/models"
+	"smart-home/services"
 	"time"
 )
 

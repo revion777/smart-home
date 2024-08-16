@@ -2,7 +2,7 @@ package queue
 
 import (
 	"context"
-	"smart-home/layer/models"
+	"smart-home/models"
 )
 
 type Service interface {

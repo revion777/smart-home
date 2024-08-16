@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"log"
 	"net/http"
-	"smart-home/layer/config"
-	"smart-home/layer/services"
+	"smart-home/config"
+	"smart-home/services"
 )
 
 var deviceService services.DeviceService
@@ -21,7 +22,7 @@ func Handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	id := request.PathParameters["id"]
 	device, err := deviceService.GetDevice(context.Background(), id)
 	if err != nil {
-		config.AppConfig.Log.Printf("Failed to get device: %v", err)
+		log.Printf("Failed to get device: %v", err)
 		return &events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, nil
 	}
 	if device == nil {
@@ -30,7 +31,7 @@ func Handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 
 	body, err := json.Marshal(device)
 	if err != nil {
-		config.AppConfig.Log.Printf("Failed to marshal device: %v", err)
+		log.Printf("Failed to marshal device: %v", err)
 		return &events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, nil
 	}
 
