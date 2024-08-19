@@ -3,12 +3,12 @@
 ## For Windows Users:
 
 1. **Set the environment variable `%APP_PATH%`:**
-   - This variable should point to the root directory of your application.
+   - This variable should point to the root directory of the application.
    - **Command:**
      ```cmd
      set APP_PATH=C:\Path\To\Your\App
      ```
-     Replace `C:\Path\To\Your\App` with the actual path to your application's root directory.
+     Replace `C:\Path\To\Your\App` with the actual path to the application's root directory.
 
 2. **Navigate to `%APP_PATH%` and configure AWS:**
    - Open a command prompt, navigate to the path stored in `%APP_PATH%`, and run AWS configuration.
@@ -20,7 +20,7 @@
    - Follow the prompts to enter your AWS Access Key ID, Secret Access Key, region, and output format.
 
 3. **Run `tests.bat` to test the project:**
-    - This script will test your code before the deployment.
+    - This script will test a code before the deployment.
     - **Command:**
       ```cmd
       tests.bat
@@ -41,7 +41,7 @@
      ```
 
 6. **Deploy the application:**
-   - You can either run `deploy.bat` or use the Serverless Framework (`sls deploy`) to deploy your application to AWS.
+   - run `deploy.bat` or use the Serverless Framework (`sls deploy`) to deploy the application to AWS.
    - **Command:**
      ```cmd
      deploy.bat
