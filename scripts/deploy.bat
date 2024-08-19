@@ -1,5 +1,3 @@
-#!/bin/bash
-set -e
-
 echo "Deploying project..."
+cd %APP_PATH%
 serverless deploy

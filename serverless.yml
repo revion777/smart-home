@@ -1,118 +1,103 @@
+org: doodoodynamics
 service: smart-home
 
 provider:
   name: aws
   runtime: provided.al2023
-  region: ${opt:region, 'eu-central-1'}
-  environment:
-    DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  profile: default
+  architecture: arm64
 
-  package:
-    individually: true
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - Fn::GetAtt:
+            - DeviceTable
+            - Arn
+    - Effect: Allow
+      Action:
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+      Resource:
+        - Fn::GetAtt:
+            - DeviceQueue
+            - Arn
+
+package:
+  individually: true
 
 functions:
   createDevice:
-    handler: handlers/createDevice/main/create_device
+    handler: handlers/createDevice/main
+    package:
+      artifact: handlers/createDevice/main/create_device.zip
     events:
       - http:
           path: devices
           method: post
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:PutItem
-        Resource:
-          - Fn::GetAtt:
-              - DeviceTable
-              - Arn
 
   getDevice:
-    handler: handlers/getDevice/main/get_device
+    handler: handlers/getDevice/bootstrap
+    package:
+      artifact: handlers/getDevice/main/get_device.zip
     events:
       - http:
           path: devices/{id}
           method: get
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:GetItem
-        Resource:
-          - Fn::GetAtt:
-              - DeviceTable
-              - Arn
 
   updateDevice:
-    handler: handlers/updateDevice/main/update_device
+    handler: handlers/updateDevice/bootstrap
+    package:
+      artifact: handlers/updateDevice/main/update_device.zip
     events:
       - http:
           path: devices/{id}
           method: put
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:UpdateItem
-        Resource:
-          - Fn::GetAtt:
-              - DeviceTable
-              - Arn
 
   deleteDevice:
-    handler: handlers/deleteDevice/main/delete_device
+    handler: handlers/deleteDevice/bootstrap
+    package:
+      artifact: handlers/deleteDevice/main/delete_device.zip
     events:
       - http:
           path: devices/{id}
           method: delete
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:DeleteItem
-        Resource:
-          - Fn::GetAtt:
-              - DeviceTable
-              - Arn
 
   processSQSMessage:
-    handler: handlers/processSqs/main/process_sqs
+    handler: handlers/processSqs/bootstrap
+    package:
+      artifact: handlers/processSqs/main/process_sqs.zip
     events:
       - sqs:
           arn:
             Fn::GetAtt:
               - DeviceQueue
               - Arn
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - sqs:ReceiveMessage
-          - sqs:DeleteMessage
-        Resource:
-          - Fn::GetAtt:
-              - DeviceQueue
-              - Arn
-      - Effect: Allow
-        Action:
-          - dynamodb:UpdateItem
-        Resource:
-          - Fn::GetAtt:
-              - DeviceTable
-              - Arn
 
 resources:
-  DeviceTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: ${self:provider.environment.DYNAMODB_TABLE}
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
-  
-  DeviceQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: deviceQueue
+  Resources:
+    DeviceTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: devices
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    DeviceQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: deviceQueue
 
   Outputs:
     DeviceTableName:
