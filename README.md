@@ -19,21 +19,28 @@
      ```
    - Follow the prompts to enter your AWS Access Key ID, Secret Access Key, region, and output format.
 
-3. **Run Serverless Framework (`sls`) and choose the existing app option:**
+3. **Run `tests.bat` to test the project:**
+    - This script will test your code before the deployment.
+    - **Command:**
+      ```cmd
+      tests.bat
+      ```
+
+4. **Run Serverless Framework (`sls`) and choose the existing app option:**
    - **Command:**
      ```cmd
      sls
      ```
    - When prompted, choose the option to work with an existing app.
 
-4. **Run `build.bat` to build the project:**
+5. **Run `build.bat` to build the project:**
    - This script will compile your code and prepare the necessary files for deployment.
    - **Command:**
      ```cmd
      build.bat
      ```
 
-5. **Deploy the application:**
+6. **Deploy the application:**
    - You can either run `deploy.bat` or use the Serverless Framework (`sls deploy`) to deploy your application to AWS.
    - **Command:**
      ```cmd
